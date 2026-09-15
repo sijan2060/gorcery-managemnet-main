@@ -10,3 +10,5 @@ export { default as MyOrders } from "./MyOrders";
 export { default as OrderTracking } from "./OrderTracking";
 export { default as Addresses } from "./Addresses";
 export { default as BecomeSeller } from "./BecomeSeller";
+export { default as HelpSupport } from "./HelpSupport";
+

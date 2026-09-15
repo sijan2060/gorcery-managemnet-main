@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import {
     CheckCircle2,
@@ -13,6 +13,41 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 
+interface TrackingOrderItem {
+    name: string;
+    price: number;
+    quantity: number;
+    image?: string;
+}
+
+interface TrackingOrder {
+    _id: string;
+    orderNumber?: string;
+    createdAt: string;
+    paymentMethodName: string;
+    deliverySlot: string;
+    total: number;
+    subtotal: number;
+    deliveryFee: number;
+    discount: number;
+    isPaid: boolean;
+    deliveryOtp: string;
+    shippingAddress: {
+        fullName: string;
+        phone: string;
+        address: string;
+        city: string;
+        instructions?: string;
+    };
+    deliveryPartner: {
+        name: string;
+        phone: string;
+        vehicleType: string;
+        avatar: string;
+    };
+    items: TrackingOrderItem[];
+}
+
 const TRACKING_STEPS = [
     { key: "Placed", title: "Order Placed", time: "Just now", desc: "Order verified & sent to store", completed: true },
     { key: "Confirmed", title: "Order Confirmed", time: "2 mins ago", desc: "Store accepted your grocery list", completed: true },
@@ -26,23 +61,19 @@ const OrderTracking = () => {
     const navigate = useNavigate();
     const currency = import.meta.env.VITE_CURRENCY_SYMBOL || "Rs.";
 
-    const [order, setOrder] = useState<any | null>(null);
-
-    useEffect(() => {
+    const [order] = useState<TrackingOrder>(() => {
         try {
             const raw = localStorage.getItem("pasalmandu_orders");
             const orders = raw ? JSON.parse(raw) : [];
             if (Array.isArray(orders) && orders.length > 0) {
-                const found = id ? orders.find((o: any) => o._id === id || o.orderNumber === id) : orders[0];
-                setOrder(found || orders[0]);
-                return;
+                const found = id ? orders.find((o: TrackingOrder) => o._id === id || o.orderNumber === id) : orders[0];
+                if (found) return found;
             }
         } catch {
             // fallback
         }
 
-        // Fallback default sample order for viewing
-        setOrder({
+        return {
             _id: id || "PSM-2026-981245",
             createdAt: "Today, 11:45 AM",
             paymentMethodName: "Cash on Delivery",
@@ -83,11 +114,11 @@ const OrderTracking = () => {
                     name: "Butter Croissant 100g",
                     price: 45,
                     quantity: 1,
-                    image: "https://raw.githubusercontent.com/avinashdm/gs-images/main/greencart/zvoeqbvrbrt7atqj0dbu.png",
+                    image: "https://raw.githubusercontent.com/avinashdm/gs-images/main/greencart/vy1xa7zovcu22smzapzv.png",
                 },
             ],
-        });
-    }, [id]);
+        };
+    });
 
     if (!order) {
         return (
@@ -350,7 +381,7 @@ const OrderTracking = () => {
                             </div>
 
                             <div className="py-3 divide-y divide-zinc-100 max-h-48 overflow-y-auto pr-1">
-                                {order.items?.map((item: any, idx: number) => (
+                                {order.items?.map((item: TrackingOrderItem, idx: number) => (
                                     <div key={idx} className="py-2 flex items-center justify-between text-xs">
                                         <div className="flex items-center gap-2.5 min-w-0">
                                             {item.image && (

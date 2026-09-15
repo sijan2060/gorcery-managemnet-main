@@ -1,53 +1,72 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Package, Truck, Clock, MapPin, ShoppingBag } from "lucide-react";
 
+interface OrderItemPreview {
+    name: string;
+    price: number;
+    quantity: number;
+    image?: string;
+}
+
+interface StoredOrder {
+    _id: string;
+    orderNumber?: string;
+    createdAt: string;
+    paymentMethodName: string;
+    status: string;
+    deliverySlot: string;
+    total: number;
+    items: OrderItemPreview[];
+    shippingAddress?: {
+        address: string;
+        city: string;
+    };
+}
+
+const DEFAULT_SAMPLE_ORDERS: StoredOrder[] = [
+    {
+        _id: "PSM-2026-981245",
+        createdAt: "Today, 11:45 AM",
+        paymentMethodName: "Cash on Delivery",
+        status: "Out for Delivery",
+        deliverySlot: "Instant Express (30–45 Mins)",
+        total: 580,
+        items: [
+            {
+                name: "Organic Quinoa 500g",
+                price: 420,
+                quantity: 1,
+                image: "https://raw.githubusercontent.com/avinashdm/gs-images/main/greencart/cxrrgnf12xuhkr4dyhi2.png",
+            },
+            {
+                name: "Brown Bread 400g",
+                price: 35,
+                quantity: 2,
+                image: "https://raw.githubusercontent.com/avinashdm/gs-images/main/greencart/vy1xa7zovcu22smzapzv.png",
+            },
+        ],
+        shippingAddress: {
+            address: "House #42, Madan Bhandari Path, New Baneshwor",
+            city: "Kathmandu",
+        },
+    },
+];
+
 const MyOrders = () => {
     const currency = import.meta.env.VITE_CURRENCY_SYMBOL || "Rs.";
-    const [orders, setOrders] = useState<any[]>([]);
-
-    useEffect(() => {
+    const [orders] = useState<StoredOrder[]>(() => {
         try {
             const raw = localStorage.getItem("pasalmandu_orders");
             const stored = raw ? JSON.parse(raw) : [];
             if (Array.isArray(stored) && stored.length > 0) {
-                setOrders(stored);
-                return;
+                return stored;
             }
         } catch {
             // fallback
         }
-
-        // Fallback default sample order
-        setOrders([
-            {
-                _id: "PSM-2026-981245",
-                createdAt: "Today, 11:45 AM",
-                paymentMethodName: "Cash on Delivery",
-                status: "Out for Delivery",
-                deliverySlot: "Instant Express (30–45 Mins)",
-                total: 580,
-                items: [
-                    {
-                        name: "Organic Quinoa 500g",
-                        price: 420,
-                        quantity: 1,
-                        image: "https://raw.githubusercontent.com/avinashdm/gs-images/main/greencart/cxrrgnf12xuhkr4dyhi2.png",
-                    },
-                    {
-                        name: "Brown Bread 400g",
-                        price: 35,
-                        quantity: 2,
-                        image: "https://raw.githubusercontent.com/avinashdm/gs-images/main/greencart/vy1xa7zovcu22smzapzv.png",
-                    },
-                ],
-                shippingAddress: {
-                    address: "House #42, Madan Bhandari Path, New Baneshwor",
-                    city: "Kathmandu",
-                },
-            },
-        ]);
-    }, []);
+        return DEFAULT_SAMPLE_ORDERS;
+    });
 
     return (
         <div className="min-h-screen bg-app-cream pb-20">
@@ -106,7 +125,7 @@ const MyOrders = () => {
 
                             {/* Item previews */}
                             <div className="py-4 flex flex-wrap items-center gap-4">
-                                {order.items?.map((item: any, i: number) => (
+                                {order.items?.map((item: OrderItemPreview, i: number) => (
                                     <div key={i} className="flex items-center gap-2 text-xs bg-zinc-50 p-2 rounded-xl border border-zinc-100">
                                         {item.image && (
                                             <img

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import {
     ShieldCheck,
@@ -39,6 +39,46 @@ interface DeliveryAddressOption {
     city: string;
     instructions?: string;
     isDefault?: boolean;
+}
+
+interface PlacedOrderItem {
+    product: string;
+    name: string;
+    price: number;
+    unit: string;
+    quantity: number;
+    image: string;
+}
+
+interface PlacedOrder {
+    _id: string;
+    orderNumber: string;
+    items: PlacedOrderItem[];
+    shippingAddress: {
+        fullName: string;
+        phone: string;
+        address: string;
+        city: string;
+        instructions?: string;
+        label: string;
+    };
+    paymentMethod: string;
+    paymentMethodName: string;
+    subtotal: number;
+    deliveryFee: number;
+    discount: number;
+    total: number;
+    deliverySlot: string;
+    status: string;
+    isPaid: boolean;
+    deliveryOtp: string;
+    deliveryPartner: {
+        name: string;
+        phone: string;
+        vehicleType: string;
+        avatar: string;
+    };
+    createdAt: string;
 }
 
 const DEFAULT_ADDRESSES: DeliveryAddressOption[] = [
@@ -143,20 +183,15 @@ const Checkout = () => {
     const currency = import.meta.env.VITE_CURRENCY_SYMBOL || "Rs.";
 
     // Fallback sample items if cart is empty so page can be tested directly
-    const [mockItems, setMockItems] = useState<CartItem[]>([]);
-    
-    useEffect(() => {
-        if (cartItems.length === 0 && mockItems.length === 0) {
-            // Pick 2 nice dummy items from assets
-            const sample = [
-                { product: dummyProducts[0], quantity: 2 },
-                { product: dummyProducts[1], quantity: 1 },
-            ];
-            setMockItems(sample);
-        }
-    }, [cartItems, mockItems]);
+    const fallbackItems = useMemo<CartItem[]>(
+        () => [
+            { product: dummyProducts[0], quantity: 2 },
+            { product: dummyProducts[1], quantity: 1 },
+        ],
+        []
+    );
 
-    const activeItems = cartItems.length > 0 ? cartItems : mockItems;
+    const activeItems = cartItems.length > 0 ? cartItems : fallbackItems;
     const itemsTotal = cartItems.length > 0
         ? cartTotal
         : activeItems.reduce((acc, it) => acc + it.product.price * it.quantity, 0);
@@ -218,7 +253,7 @@ const Checkout = () => {
     // State: Processing & Order Confirmation
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
     const [processingStep, setProcessingStep] = useState<string>("");
-    const [placedOrder, setPlacedOrder] = useState<any | null>(null);
+    const [placedOrder, setPlacedOrder] = useState<PlacedOrder | null>(null);
 
     // ── Calculations ──
     const deliveryFee =
@@ -585,7 +620,7 @@ const Checkout = () => {
                                     </span>
                                 </h3>
                                 <div className="divide-y divide-zinc-100 max-h-56 overflow-y-auto pr-1">
-                                    {placedOrder.items.map((item: any, idx: number) => (
+                                    {placedOrder.items.map((item: PlacedOrderItem, idx: number) => (
                                         <div key={idx} className="py-2.5 flex items-center justify-between text-sm">
                                             <div className="flex items-center gap-3">
                                                 <img

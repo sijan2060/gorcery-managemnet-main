@@ -16,6 +16,7 @@ import {
     OrderTracking,
     Addresses,
     BecomeSeller,
+    HelpSupport,
 } from "./pages";
 
 const App = () => {
@@ -47,6 +48,8 @@ const App = () => {
                     <Route path="deals" element={<FlashDeals />} />
                     <Route path="cart" element={<Cart />} />
                     <Route path="become-seller" element={<BecomeSeller />} />
+                    <Route path="help" element={<HelpSupport />} />
+                    <Route path="support" element={<HelpSupport />} />
 
                     {/* Protected User Routes */}
                     <Route element={<ProtectedRoute />}>

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { ArrowUpRightIcon, BikeIcon, ChevronDownIcon, SearchIcon, ShoppingCartIcon, HomeIcon, Store } from "lucide-react";
+import { ArrowUpRightIcon, BikeIcon, ChevronDownIcon, SearchIcon, ShoppingCartIcon, HomeIcon, Store, HelpCircle } from "lucide-react";
 import { UserIcon, XIcon, MenuIcon, PackageIcon } from "lucide-react";
 import { MapPinIcon, ShieldIcon } from "lucide-react";
 import { LogOutIcon } from "lucide-react";
@@ -70,6 +70,9 @@ const Navbar = () => {
                     </Link>
                     <Link to="/become-seller" className={getNavLinkClass("/become-seller")}>
                         Sell
+                    </Link>
+                    <Link to="/help" className={getNavLinkClass("/help")}>
+                        Help
                     </Link>
                 </div>
             {/* Search Bar */}
@@ -187,6 +190,15 @@ const Navbar = () => {
                                     }`}
                                 >
                                     <Store size={16} /> Become a Seller
+                                </Link>
+
+                                <Link
+                                    to="/help"
+                                    className={`dropdown-link ${
+                                        isLinkActive("/help") ? "text-app-orange bg-orange-50 font-semibold" : ""
+                                    }`}
+                                >
+                                    <HelpCircle size={16} /> Help & Support
                                 </Link>
 
                                 {user?.isAdmin && (
