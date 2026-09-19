@@ -104,3 +104,5 @@ export interface Order {
     isPaid: boolean;
     createdAt: string;
 }
+
+export * from "./deals";
