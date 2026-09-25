@@ -2,15 +2,13 @@ import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { ArrowUpRightIcon, BikeIcon, ChevronDownIcon, SearchIcon, ShoppingCartIcon, HomeIcon, Store, HelpCircle } from "lucide-react";
 import { UserIcon, XIcon, MenuIcon, PackageIcon } from "lucide-react";
-import { MapPinIcon, ShieldIcon } from "lucide-react";
+import { MapPinIcon } from "lucide-react";
 import { LogOutIcon } from "lucide-react";
-import type { User } from "../../types";
 import { useCart } from "../../context/CartContext";
-
-const getCurrentUser = (): User | null => null;
+import { useAuth } from "../../context/AuthContext";
 
 const Navbar = () => {
-    const user = getCurrentUser();
+    const { user, isVendor, logout } = useAuth();
     const location = useLocation();
     const { cartCount } = useCart();
     const [searchQuery, setSearchQuery] = useState("");
@@ -29,11 +27,10 @@ const Navbar = () => {
 
     const getNavLinkClass = (path: string, exact: boolean = false) => {
         const active = isLinkActive(path, exact);
-        return `relative px-3.5 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
-            active
+        return `relative px-3.5 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${active
                 ? "text-app-orange bg-orange-50 font-semibold ring-1 ring-app-orange/25 shadow-2xs"
                 : "text-zinc-600 hover:text-app-orange hover:bg-orange-50/50"
-        }`;
+            }`;
     };
 
     const handleSearch = (e: React.FormEvent) => {
@@ -45,6 +42,7 @@ const Navbar = () => {
     };
 
     const handleLogout = () => {
+        logout();
         setUserMenuOpen(false);
         navigate("/");
     };
@@ -57,7 +55,7 @@ const Navbar = () => {
                     <BikeIcon size={24} /> Pasalmandu
                 </Link>
 
-                {/* Navigation Links */}
+                {/* Navigation Links - Clean customer navigation */}
                 <div className="hidden md:flex items-center gap-2 text-sm">
                     <Link to="/" className={getNavLinkClass("/", true)}>
                         Home
@@ -68,166 +66,164 @@ const Navbar = () => {
                     <Link to="/deals" className={getNavLinkClass("/deals")}>
                         Deals
                     </Link>
-                    <Link to="/become-seller" className={getNavLinkClass("/become-seller")}>
-                        Sell
-                    </Link>
                     <Link to="/help" className={getNavLinkClass("/help")}>
                         Help
                     </Link>
                 </div>
-            {/* Search Bar */}
-            <form onSubmit={handleSearch} className="hidden sm:flex flex-1 max-w-sm text-xs
+                {/* Search Bar */}
+                <form onSubmit={handleSearch} className="hidden sm:flex flex-1 max-w-sm text-xs
             sm:text-sm">
-                <div className="relative w-full">
-                    <SearchIcon className="absolute left-2.5 top-1/2
+                    <div className="relative w-full">
+                        <SearchIcon className="absolute left-2.5 top-1/2
                     translate-y-[-50%] size-4 text-zinc-500" />
-                    <input type="text"
-                    placeholder="Search products..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-8 p-2 bg-orange-50 rounded-full ring 
+                        <input type="text"
+                            placeholder="Search products..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full pl-8 p-2 bg-orange-50 rounded-full ring 
                     ring-app-orange/15 focus:ring-app-orange/30" />
-                </div>
+                    </div>
                 </form>
 
                 {/* Right Actions */}
                 <div className="flex items-center gap-3">
                     {/* Cart */}
                     <Link to="/cart" className="relative p-2 rounded-xl hover:bg-orange-50 transition-colors">
-                        <ShoppingCartIcon className="size-5 text-zinc-900"/>
+                        <ShoppingCartIcon className="size-5 text-zinc-900" />
                         {cartCount > 0 && <span className="absolute -top-1 -right-1
                         size-4 bg-app-orange text-white text-[10px] rounded-full
-                        flex-center">{cartCount}</span>} 
+                        flex-center">{cartCount}</span>}
                     </Link>
                     {/* User Menu */}
                     <div className="relative">
-                       {user ? (
-               <button onClick={() => setUserMenuOpen(!userMenuOpen)} className="flex items-center gap-2 p-2">
-                           <div className="size-5 rounded-full bg-green-950
-                           text-white flex-center">
-                           {user.name.charAt(0).toUpperCase()}
-                            </div>
-                            <ChevronDownIcon className="size-3 text-zinc-500" />
-                        </button>
-                       )
-                       : (
-                        <div className="flex-center gap-2">
-                            <Link to ="/login" className="hidden md:flex
+                        {user ? (
+                            <button
+                                onClick={() => setUserMenuOpen(!userMenuOpen)}
+                                className="flex items-center gap-2 p-1.5 rounded-full hover:bg-orange-50 transition-colors border border-zinc-200"
+                            >
+                                <div className="size-7 rounded-full bg-green-950 text-white flex items-center justify-center font-bold text-xs">
+                                    {(user.name || "U").charAt(0).toUpperCase()}
+                                </div>
+                                <span className="hidden sm:inline-block text-xs font-semibold text-zinc-800 max-w-28 truncate">
+                                    {user.name}
+                                </span>
+                                <ChevronDownIcon className="size-3.5 text-zinc-500" />
+                            </button>
+                        )
+                            : (
+                                <div className="flex-center gap-2">
+                                    <Link to="/login" className="hidden md:flex
                             items-center gap-2 px-4 py-2 text-sm font-medium 
                             text-white bg-green-950 rounded-full
                             hover:bg-green-900 transition">
-                                <UserIcon size={16} /> Login
-                            </Link>
-                            {userMenuOpen ? <XIcon className= "md:hidden" 
-                            onClick={() => setUserMenuOpen(!userMenuOpen)} /> :
-                            <MenuIcon className="md:hidden" onClick={() =>
-                            setUserMenuOpen(!userMenuOpen)} />
-                             }
-                        </div>
-                       )}
+                                        <UserIcon size={16} /> Login
+                                    </Link>
+                                    {userMenuOpen ? <XIcon className="md:hidden"
+                                        onClick={() => setUserMenuOpen(!userMenuOpen)} /> :
+                                        <MenuIcon className="md:hidden" onClick={() =>
+                                            setUserMenuOpen(!userMenuOpen)} />
+                                    }
+                                </div>
+                            )}
 
-                          {userMenuOpen && (
-                            <div className="fixed inset-0 z-40" onClick={() => 
-                            setUserMenuOpen(false)} />
-                          )}
-                          {userMenuOpen && (
-                            <div className="absolute right-0 mt-2 w-48 bg-white 
-                            rounded-xl shadow-lg border 
+                        {userMenuOpen && (
+                            <div className="fixed inset-0 z-40" onClick={() =>
+                                setUserMenuOpen(false)} />
+                        )}
+                        {userMenuOpen && (
+                            <div className="absolute right-0 mt-2 w-56 bg-white 
+                            rounded-2xl shadow-xl border 
                             border-app-border py-2 z-50 animate-fade-in">
                                 {user && (
-                                    <div className="px-4 py-2 border-b
-                                    border-app-border">
-                                        <p className="text-sm font-medium 
-                                        text-zinc-900">{user?.name}</p>
-                                        <p className="text-xs text-zinc-500">
-                                        {user?.email}
-                                        </p>
-                                </div>
+                                    <div className="px-4 py-2.5 border-b border-app-border">
+                                        <p className="text-sm font-semibold text-zinc-900 truncate">{user.name}</p>
+                                        <p className="text-xs text-zinc-500 truncate">{user.email}</p>
+                                        {isVendor && (
+                                            <span className="inline-block mt-1 px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-bold text-[10px]">
+                                                🏪 {user.storeName || "Verified Vendor"}
+                                            </span>
+                                        )}
+                                    </div>
                                 )}
-                                <div onClick={()=> setUserMenuOpen(false)}>
-                                {!user && <Link to='/login' className="dropdown-link"> <UserIcon size=
-                                {16} /> Login </Link>}
+                                <div onClick={() => setUserMenuOpen(false)}>
+                                    {!user && (
+                                        <Link to='/login' className="dropdown-link">
+                                            <UserIcon size={16} /> Login / Register
+                                        </Link>
+                                    )}
 
-                                {user && <Link to='/orders'
-                                className="dropdown-link"><PackageIcon size=
-                                {16} />  My Orders</Link>}
+                                    {/* Vendor Hub Link only appears for authenticated vendors */}
+                                    {isVendor && (
+                                        <Link
+                                            to="/vendor/dashboard"
+                                            className="dropdown-link text-emerald-800 font-bold bg-emerald-50/80 hover:bg-emerald-100"
+                                        >
+                                            <Store size={16} className="text-emerald-700" /> Open Vendor Hub
+                                        </Link>
+                                    )}
 
-                                {user && <Link to='/addresses'
-                                className="dropdown-link"><MapPinIcon size=
-                                {16} />  My Addresses</Link>}
+                                    {user && (
+                                        <Link to='/orders' className="dropdown-link">
+                                            <PackageIcon size={16} /> My Orders
+                                        </Link>
+                                    )}
 
-                                <Link
-                                    to="/"
-                                    className={`dropdown-link md:hidden ${
-                                        isLinkActive("/", true) ? "text-app-orange bg-orange-50 font-semibold" : ""
-                                    }`}
-                                >
-                                    <HomeIcon size={16} /> Home
-                                </Link>
+                                    {user && (
+                                        <Link to='/addresses' className="dropdown-link">
+                                            <MapPinIcon size={16} /> My Addresses
+                                        </Link>
+                                    )}
 
-                                <Link
-                                    to="/products"
-                                    className={`dropdown-link md:hidden ${
-                                        isLinkActive("/products") ? "text-app-orange bg-orange-50 font-semibold" : ""
-                                    }`}
-                                >
-                                    <ArrowUpRightIcon size={16} /> Products
-                                </Link>
+                                    <Link
+                                        to="/"
+                                        className={`dropdown-link md:hidden ${isLinkActive("/", true) ? "text-app-orange bg-orange-50 font-semibold" : ""
+                                            }`}
+                                    >
+                                        <HomeIcon size={16} /> Home
+                                    </Link>
 
-                                <Link
-                                    to="/deals"
-                                    className={`dropdown-link md:hidden ${
-                                        isLinkActive("/deals") ? "text-app-orange bg-orange-50 font-semibold" : ""
-                                    }`}
-                                >
-                                    <ArrowUpRightIcon size={16} /> Deals
-                                </Link>
+                                    <Link
+                                        to="/products"
+                                        className={`dropdown-link md:hidden ${isLinkActive("/products") ? "text-app-orange bg-orange-50 font-semibold" : ""
+                                            }`}
+                                    >
+                                        <ArrowUpRightIcon size={16} /> Products
+                                    </Link>
 
-                                <Link
-                                    to="/become-seller"
-                                    className={`dropdown-link md:hidden ${
-                                        isLinkActive("/become-seller") ? "text-app-orange bg-orange-50 font-semibold" : ""
-                                    }`}
-                                >
-                                    <Store size={16} /> Become a Seller
-                                </Link>
+                                    <Link
+                                        to="/deals"
+                                        className={`dropdown-link md:hidden ${isLinkActive("/deals") ? "text-app-orange bg-orange-50 font-semibold" : ""
+                                            }`}
+                                    >
+                                        <ArrowUpRightIcon size={16} /> Deals
+                                    </Link>
 
-                                <Link
-                                    to="/help"
-                                    className={`dropdown-link ${
-                                        isLinkActive("/help") ? "text-app-orange bg-orange-50 font-semibold" : ""
-                                    }`}
-                                >
-                                    <HelpCircle size={16} /> Help & Support
-                                </Link>
+                                    <Link
+                                        to="/help"
+                                        className={`dropdown-link ${isLinkActive("/help") ? "text-app-orange bg-orange-50 font-semibold" : ""
+                                            }`}
+                                    >
+                                        <HelpCircle size={16} /> Help & Support
+                                    </Link>
 
-                                {user?.isAdmin && (
-                                    <Link to='/admin/products'
-                                className="dropdown-link"><ShieldIcon
-                                className="text-app-orange-dark" size={16} />
-                                <span 
-                                className="text-app-orange-dark">Admin
-                                 Panel</span></Link>
-                                )}
-                                {user && (
-                                    <div className="border-t border-app-border pt-1">
-                                        <button onClick={handleLogout} className="flex items-center
-                                        gap-3 px-4 py-2.5 text-sm
+                                    {user && (
+                                        <div className="border-t border-app-border pt-1">
+                                            <button onClick={handleLogout} className="flex items-center
+                                        gap-3 px-4 py-2 text-sm
                                         text-app-error hover:bg-red-50 w-full
                                         transition-colors">
-                                            <LogOutIcon size={16} />Logout
-                                 </button>
-
-                                    </div>
-                                       )}
+                                                <LogOutIcon size={16} />Logout
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
-                          )}
+                        )}
                     </div>
                 </div>
-        </div>
-    </nav>
-    )
-}
+            </div>
+        </nav>
+    );
+};
 
 export default Navbar;

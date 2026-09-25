@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
     Store,
     TrendingUp,
@@ -18,8 +18,11 @@ import {
     Calculator,
     MessageCircle,
     Star,
+    LogIn,
 } from "lucide-react";
 import toast from "react-hot-toast";
+import { useAuth } from "../context/AuthContext";
+import { useVendor } from "../context/VendorContext";
 
 const businessCategories = [
     "Kirana & General Grocery Store",
@@ -87,6 +90,10 @@ const testimonials = [
 ];
 
 const BecomeSeller = () => {
+    const { loginAsVendor } = useAuth();
+    const { store, updateStoreSettings } = useVendor();
+    const navigate = useNavigate();
+
     // Interactive Profit Calculator State
     const [dailyOrders, setDailyOrders] = useState<number>(30);
     const [avgOrderValue, setAvgOrderValue] = useState<number>(850);
@@ -116,6 +123,7 @@ const BecomeSeller = () => {
         storeName: string;
         ownerName: string;
         phone: string;
+        email: string;
     } | null>(null);
 
     const [expandedFaq, setExpandedFaq] = useState<number | null>(0);
@@ -138,15 +146,33 @@ const BecomeSeller = () => {
 
         setTimeout(() => {
             const appId = `PSL-VEN-${Math.floor(100000 + Math.random() * 900000)}`;
+            const vendorEmail = form.email.trim() || `${form.ownerName.toLowerCase().replace(/[^a-z0-9]/g, "") || "vendor"}@pasalmandu.com`;
+
+            // Update store profile
+            updateStoreSettings({
+                ...store,
+                storeName: form.storeName.trim(),
+                ownerName: form.ownerName.trim(),
+                email: vendorEmail,
+                phone: form.phone.trim(),
+                address: `${form.address.trim()}, ${form.city}`,
+                category: form.category,
+            });
+
+            // Log in as authenticated vendor
+            loginAsVendor(vendorEmail, form.storeName.trim(), form.ownerName.trim(), form.phone.trim());
+
             setSubmittedData({
                 appId,
-                storeName: form.storeName,
-                ownerName: form.ownerName,
-                phone: form.phone,
+                storeName: form.storeName.trim(),
+                ownerName: form.ownerName.trim(),
+                phone: form.phone.trim(),
+                email: vendorEmail,
             });
             setLoading(false);
-            toast.success("Application Submitted Successfully!", {
-                icon: "🎉",
+
+            toast.success("Merchant Account Created & Activated!", {
+                icon: "🏪",
                 style: {
                     borderRadius: "12px",
                     background: "#1B3022",
@@ -172,7 +198,7 @@ const BecomeSeller = () => {
 
                 <div className="max-w-7xl mx-auto relative z-10">
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-                        
+
                         {/* Left Hero Content */}
                         <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
                             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-400/20 text-amber-300 text-xs sm:text-sm font-semibold border border-amber-400/30 shadow-sm">
@@ -206,6 +232,14 @@ const BecomeSeller = () => {
                                     <Calculator className="size-5 text-amber-400" />
                                     <span>Calculate Earnings</span>
                                 </a>
+
+                                <Link
+                                    to="/vendor/login"
+                                    className="w-full sm:w-auto px-6 py-4 bg-emerald-900/90 hover:bg-emerald-800 text-white font-semibold rounded-2xl flex items-center justify-center gap-2 border border-emerald-500/40 transition-all shadow-md"
+                                >
+                                    <LogIn className="size-4 text-amber-400" />
+                                    <span>Merchant Login</span>
+                                </Link>
                             </div>
 
                             {/* Trust badges row */}
@@ -301,7 +335,7 @@ const BecomeSeller = () => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-                    
+
                     {/* Benefit 1 */}
                     <div className="bg-white rounded-3xl p-7 border border-app-border shadow-xs hover:shadow-md transition-all group">
                         <div className="size-14 rounded-2xl bg-orange-50 text-app-orange flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
@@ -433,7 +467,7 @@ const BecomeSeller = () => {
             <section id="calculator-section" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
                 <div className="bg-gradient-to-br from-[#1B3022] to-emerald-900 text-white rounded-3xl p-6 sm:p-12 shadow-xl border border-emerald-700/40">
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
-                        
+
                         {/* Calculator Controls */}
                         <div className="lg:col-span-6 space-y-6">
                             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-400/20 text-amber-300 text-xs font-semibold">
@@ -580,7 +614,7 @@ const BecomeSeller = () => {
             {/* ── 6. SELLER REGISTRATION APPLICATION FORM ───────────────── */}
             <section id="application-section" className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
                 <div className="bg-white rounded-3xl border border-app-border shadow-xl overflow-hidden">
-                    
+
                     {/* Form Top Header */}
                     <div className="bg-gradient-to-r from-[#1B3022] via-[#244230] to-emerald-900 text-white p-6 sm:p-10 text-center relative overflow-hidden">
                         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400/20 text-amber-300 text-xs font-semibold mb-3">
@@ -596,7 +630,7 @@ const BecomeSeller = () => {
                     <div className="p-6 sm:p-10">
                         {!submittedData ? (
                             <form onSubmit={handleSubmit} className="space-y-6">
-                                
+
                                 {/* Section A: Shop Details */}
                                 <div>
                                     <h4 className="text-sm font-bold uppercase tracking-wider text-app-green flex items-center gap-2 mb-4">
@@ -812,15 +846,39 @@ const BecomeSeller = () => {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <span className="px-3 py-1 bg-amber-100 text-amber-900 font-mono text-xs font-bold rounded-full">
-                                        Application ID: {submittedData.appId}
-                                    </span>
+                                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-100 text-emerald-800 font-semibold text-xs rounded-full">
+                                        <CheckCircle2 className="size-3.5 text-emerald-700" />
+                                        <span>Merchant Account Ready & Signed In</span>
+                                    </div>
                                     <h3 className="text-2xl font-bold text-zinc-900">
-                                        Congratulations, {submittedData.ownerName}!
+                                         Congratulations, {submittedData.ownerName}!
                                     </h3>
                                     <p className="text-sm text-zinc-600 max-w-md mx-auto">
-                                        We have received the partnership application for <strong className="text-app-green">{submittedData.storeName}</strong>.
+                                         Your seller account for <strong className="text-app-green">{submittedData.storeName}</strong> has been created and your Vendor Hub dashboard is ready.
+                                     </p>
+                                     <p className="text-xs text-zinc-400 font-mono">
+                                         Application / Store ID: {submittedData.appId}
+                                     </p>
+                                </div>
+
+                                {/* Primary Call to Action to enter Vendor Hub */}
+                                <div className="max-w-md mx-auto p-5 rounded-2xl bg-gradient-to-br from-[#1B3022] to-emerald-900 text-white space-y-3 shadow-lg">
+                                    <div className="flex items-center justify-between text-xs text-amber-300 font-semibold">
+                                        <span className="flex items-center gap-1.5">
+                                            <Store className="size-4 text-amber-400" /> Live Vendor Hub
+                                        </span>
+                                        <span>0% Trial Active</span>
+                                    </div>
+                                    <p className="text-xs text-white/80">
+                                        You can now manage products, view incoming orders, customize your store hours and check payouts directly from your Vendor Hub.
                                     </p>
+                                    <button
+                                        onClick={() => navigate("/vendor/dashboard")}
+                                        className="w-full py-3.5 bg-app-orange hover:bg-app-orange-dark text-white font-bold rounded-xl flex items-center justify-center gap-2 text-sm shadow-md transition-all hover:scale-[1.02] active:scale-[0.98]"
+                                    >
+                                        <span>Open Vendor Hub Now</span>
+                                        <ArrowRight className="size-4" />
+                                    </button>
                                 </div>
 
                                 <div className="bg-zinc-50 border border-zinc-200 rounded-2xl p-6 text-left max-w-lg mx-auto space-y-3">
@@ -836,17 +894,24 @@ const BecomeSeller = () => {
                                         </li>
                                         <li className="flex items-start gap-2">
                                             <span className="font-bold text-app-orange">3.</span>
-                                            <span>Your store will go live to 50,000+ local grocery buyers with 0% initial fees!</span>
+                                            <span>Your store catalog is live to 50,000+ local grocery buyers with 0% initial fees!</span>
                                         </li>
                                     </ul>
                                 </div>
 
                                 <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                                    <button
+                                        onClick={() => navigate("/vendor/dashboard")}
+                                        className="w-full sm:w-auto px-6 py-3 bg-app-green hover:bg-emerald-950 text-white font-semibold text-xs sm:text-sm rounded-xl transition-colors flex items-center justify-center gap-2"
+                                    >
+                                        <Store className="size-4 text-amber-400" />
+                                        <span>Go to Vendor Dashboard</span>
+                                    </button>
                                     <Link
                                         to="/"
-                                        className="w-full sm:w-auto px-6 py-3 bg-app-green hover:bg-emerald-950 text-white font-semibold text-xs sm:text-sm rounded-xl transition-colors"
+                                        className="w-full sm:w-auto px-6 py-3 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 font-semibold text-xs sm:text-sm rounded-xl transition-colors"
                                     >
-                                        Back to Home
+                                        Customer Home
                                     </Link>
                                     <button
                                         onClick={() => setSubmittedData(null)}
@@ -886,9 +951,8 @@ const BecomeSeller = () => {
                                 >
                                     <span>{faq.q}</span>
                                     <ChevronDown
-                                        className={`size-5 text-zinc-400 transition-transform duration-200 shrink-0 ${
-                                            isExpanded ? "rotate-180 text-app-orange" : ""
-                                        }`}
+                                        className={`size-5 text-zinc-400 transition-transform duration-200 shrink-0 ${isExpanded ? "rotate-180 text-app-orange" : ""
+                                            }`}
                                     />
                                 </button>
                                 {isExpanded && (

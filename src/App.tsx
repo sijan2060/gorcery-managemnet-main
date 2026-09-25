@@ -1,8 +1,9 @@
 import { Toaster } from "react-hot-toast";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AppLayout } from "./components/layout";
 import { ChatbotWidget } from "./components/common";
-import { ProtectedRoute } from "./components/auth";
+import { ProtectedRoute, VendorProtectedRoute } from "./components/auth";
+import { VendorLayout } from "./components/vendor/layout";
 import {
     Home,
     Products,
@@ -18,8 +19,25 @@ import {
     BecomeSeller,
     HelpSupport,
 } from "./pages";
+import {
+    VendorLogin,
+    VendorDashboard,
+    VendorProducts,
+    VendorProductEdit,
+    VendorCategories,
+    VendorInventory,
+    VendorOrders,
+    VendorDeals,
+    VendorCustomers,
+    VendorAnalytics,
+    VendorSettings,
+    VendorProfile,
+} from "./pages/vendor";
 
 const App = () => {
+    const location = useLocation();
+    const isVendorRoute = location.pathname.startsWith("/vendor");
+
     return (
         <>
             <Toaster
@@ -36,10 +54,32 @@ const App = () => {
             />
 
             <Routes>
-                {/* Auth pages - No Navbar/Footer */}
+                {/* ─── CUSTOMER AUTH PAGES ─────────────────────────────────────── */}
                 <Route path="/login" element={<Login />} />
 
-                {/* Main pages - With Navbar/Footer Layout */}
+                {/* ─── VENDOR AUTH PAGES ───────────────────────────────────────── */}
+                <Route path="/vendor/login" element={<VendorLogin />} />
+
+                {/* ─── VENDOR PORTAL PROTECTED ROUTES ──────────────────────────── */}
+                <Route element={<VendorProtectedRoute />}>
+                    <Route path="/vendor" element={<VendorLayout />}>
+                        <Route index element={<Navigate to="/vendor/dashboard" replace />} />
+                        <Route path="dashboard" element={<VendorDashboard />} />
+                        <Route path="products" element={<VendorProducts />} />
+                        <Route path="products/new" element={<VendorProductEdit />} />
+                        <Route path="products/edit/:id" element={<VendorProductEdit />} />
+                        <Route path="categories" element={<VendorCategories />} />
+                        <Route path="inventory" element={<VendorInventory />} />
+                        <Route path="orders" element={<VendorOrders />} />
+                        <Route path="deals" element={<VendorDeals />} />
+                        <Route path="customers" element={<VendorCustomers />} />
+                        <Route path="analytics" element={<VendorAnalytics />} />
+                        <Route path="settings" element={<VendorSettings />} />
+                        <Route path="profile" element={<VendorProfile />} />
+                    </Route>
+                </Route>
+
+                {/* ─── CUSTOMER PORTAL PAGES ───────────────────────────────────── */}
                 <Route path="/" element={<AppLayout />}>
                     <Route index element={<Home />} />
                     <Route path="products" element={<Products />} />
@@ -51,7 +91,7 @@ const App = () => {
                     <Route path="help" element={<HelpSupport />} />
                     <Route path="support" element={<HelpSupport />} />
 
-                    {/* Protected User Routes */}
+                    {/* Protected Customer Routes */}
                     <Route element={<ProtectedRoute />}>
                         <Route path="checkout" element={<Checkout />} />
                         <Route path="payment" element={<Checkout />} />
@@ -60,9 +100,13 @@ const App = () => {
                         <Route path="addresses" element={<Addresses />} />
                     </Route>
                 </Route>
+
+                {/* Fallback */}
+                <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
 
-            <ChatbotWidget />
+            {/* Chatbot only for customer store, hidden on vendor dashboard */}
+            {!isVendorRoute && <ChatbotWidget />}
         </>
     );
 };

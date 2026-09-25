@@ -106,3 +106,4 @@ export interface Order {
 }
 
 export * from "./deals";
+export * from "./vendor";
